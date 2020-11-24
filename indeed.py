@@ -7,9 +7,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 
-def getJobs(title: str, location: str):
+def getJobs(title: str, location: str, limit=1000):
 
-    # open url in chrome and wait 2 second to load
+    # open url in chrome and wait for page to appear
     url = 'https://www.indeed.com'
     driver = webdriver.Chrome('./chromedriver')
     driver.get(url)
@@ -43,9 +43,17 @@ def getJobs(title: str, location: str):
     currentPage = 0
     res = set()
     while go:
-        WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.ID, 'resultsBodyContent'))
-        )
+        if len(res) >= limit:
+            break
+
+        try:
+            WebDriverWait(driver, 20).until(
+                EC.presence_of_element_located((By.ID, 'resultsBodyContent'))
+            )
+        except:
+            print('time out waiting for the search result')
+            break
+
         currentPage+=1
         print(f'page = {currentPage}')
         try:
@@ -66,9 +74,13 @@ def getJobs(title: str, location: str):
 
             j.find_element_by_css_selector('h2.title').click()
             
-            WebDriverWait(driver, 5).until(
-                EC.frame_to_be_available_and_switch_to_it((By.ID, 'vjs-container-iframe'))
-            )
+            try:
+                WebDriverWait(driver, 5).until(
+                    EC.frame_to_be_available_and_switch_to_it((By.ID, 'vjs-container-iframe'))
+                )
+            except:
+                print('time out waiting iframe')
+                driver.switch_to.default_content()
             
             try:
                 jdescription = driver.find_element_by_id('jobDescriptionText').text
