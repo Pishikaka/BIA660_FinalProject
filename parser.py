@@ -16,47 +16,49 @@ def parse(foldernames,filename):
     fw=open(filename,'w',encoding = 'utf-8')
     writer = csv.writer(fw, lineterminator = '\n')
     
-    
-    
-    #outer loop, go through different folder
-    for jobtitle in foldernames:
-        path = jobtitle +'/'
-        num = 0;
-        print(path)
-        #inner loop, find all html files
-        for i in os.listdir(path):
-            print(i)
-            text = ''
-            pt = path + i
-            try:
-                #if open,continue
-                html = open(pt,encoding = 'utf-8')
-            except:
-                #if no such file, throw finish and quit
-                result =str(num)+jobtitle+' jobs successfully added!'
-                print(result)
-                break
-            num += 1
-            
-            #parse it
-            soup = BeautifulSoup(html,'lxml')
-            
-            chunk = soup.find('div',{'class':re.compile('jobsearch-jobDescriptionText')})
-            lines = chunk.text
-            for line in lines:
-                text += line
-            if jobtitle == 'Data Engineer':
-                text = re.sub('data eng[a-z]+',' ',text.lower()).strip()
-            if jobtitle == 'Data Scientist':
-                text = re.sub('data sci[a-z]+',' ',text.lower()).strip()
-            if jobtitle == 'Software Engineer':
-                text = re.sub('software eng[a-z]+',' ',text.lower()).strip()
+    fdlist = ['NY','Arlington','BIA 660 Final', 'LA_Yun copy','St.Louis']
+    for fd in fdlist:
+        #outer loop, go through different folder
+        for jobtitle in foldernames:
+            path = fd+ '/' + jobtitle +'/'
+            num = 0;
+            print(path)
+            #inner loop, find all html files
+            for i in os.listdir(path):
+                print(i)
+                text = ''
+                pt = path + i
+                try:
+                    #if open,continue
+                    html = open(pt,encoding = 'utf-8')
+                except:
+                    #if no such file, throw finish and quit
+                    result =str(num)+jobtitle+' jobs successfully added!'
+                    print(result)
+                    break
+                num += 1
                 
-            #text = re.sub(jobtitle.lower(),' ',text.lower()).strip()
-            writer.writerow([text,jobtitle])
-            html.close()
-            cur = 'job' + str(num)
-            print(cur)
+                #parse it
+                soup = BeautifulSoup(html,'lxml')
+                try:
+                    chunk = soup.find('div',{'class':re.compile('jobsearch-jobDescriptionText')})
+                    lines = chunk.text
+                    for line in lines:
+                        text += line
+                    if jobtitle == 'Data Engineer':
+                        text = re.sub('data eng[a-z]+',' ',text.lower()).strip()
+                    if jobtitle == 'Data Scientist':
+                        text = re.sub('data sci[a-z]+',' ',text.lower()).strip()
+                    if jobtitle == 'Software Engineer':
+                        text = re.sub('software eng[a-z]+',' ',text.lower()).strip()
+                        
+                    #text = re.sub(jobtitle.lower(),' ',text.lower()).strip()
+                    writer.writerow([text,jobtitle])
+                    html.close()
+                    cur = 'job' + str(num)
+                    print(cur)
+                except:
+                    num -= 1
 
     fw.close()
 
